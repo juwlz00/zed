@@ -1,0 +1,2 @@
+--begin
+type state = [int]
