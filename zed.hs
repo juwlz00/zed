@@ -44,6 +44,9 @@ weast :: [Int] -> [Int] -> [Row] -> [Row]
 weast [] [] [] = [];
 weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r):(weast c1t c2t rt) 
 
+--test case
+--weast [1,2,3] [4,5,6] [[7,8,9],[10,11,12],[13,14,15]]
+
 --gridArray :: Zed -> Clue -> [[Int]]
 --gridArray (z:zt) (c:ct) = north z;
 

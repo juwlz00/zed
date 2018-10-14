@@ -42,7 +42,7 @@ weastHelper c1 c2 r = c1: (reverse(c2: reverse r))
 
 weast :: [Int] -> [Int] -> [Row] -> [Row]
 weast [] [] [] = [];
-weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r) ++ (weast c1t c2t rt) 
+weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r):(weast c1t c2t rt) 
 
 --gridArray :: Zed -> Clue -> [[Int]]
 --gridArray (z:zt) (c:ct) = north z;
