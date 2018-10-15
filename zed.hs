@@ -1,9 +1,8 @@
 import Data.List
 
-type Space = Int
-type Row = [Space]
+type Row = [Int]
 type Zed = [Row]
-type Clue = [[Int]]
+type Clue = [Row]
 
 --Main function
 {--
@@ -35,33 +34,33 @@ createZed i j = (createRow j) : (createZed (i-1) j);
 
 --Grid building
 
-north :: [Int] -> [Int]
+north :: Row -> Row
 north row = [0] ++ row ++ [0];
 
 weastHelper :: Int -> Int -> Row -> Row
 weastHelper c1 c2 r = c1: (reverse(c2: reverse r))
 
-weast :: [Int] -> [Int] -> Zed -> Zed
+weast :: Row -> Row -> Zed -> Zed
 weast [] [] [] = [];
 weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r):(weast c1t c2t rt) 
 
-south :: [Int] -> [Int]
+south :: Row -> Row
 south row = [0] ++ row ++ [0];
 
---inputGrid :: Zed -> Clue -> Zed
---inputGrid z c = (north (c!!0)) : (weast (c!!1) (c!!2) z) : (south (c!!3));
+inputGrid :: Zed -> Clue -> Zed
+inputGrid z c = reverse((south (c!!3)) : (reverse ((north (c!!0)) : (weast (c!!1) (c!!2) z))));
 
-ex c = (north c!!1):[1,2,3,4]
 --test case
---weast [1,2,3] [4,5,6] [[7,8,9],[10,11,12],[13,14,15]]
 
---gridArray :: Zed -> Clue -> [[Int]]
---gridArray (z:zt) (c:ct) = north z;
+fun x y= toGrid2 (inputGrid x y)
+--fun [[1,2,3,1],[4,5,6,4],[7,8,9,3],[1,3,4,6]] [[9,8,7,6],[6,5,4,1],[3,2,1,4],[4,6,2,1]]
+
+--inputGrid [[1,2,3,1],[4,5,6,4],[7,8,9,3],[1,3,4,6]] [[9,8,7,6],[6,5,4,1],[3,2,1,4],[4,6,2,1]]
+
+--weast [1,2,3] [4,5,6] [[7,8,9],[10,11,12],[13,14,15]]
 
 toString :: [Int] -> [String]
 toString i = id (map show i);
-
-fun x = north (x!!1);
 
 --zedToString :: Zed -> [String]
 --zedToString zed = foldr (\ x acc (map show) zed
