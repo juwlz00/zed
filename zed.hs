@@ -16,6 +16,7 @@ main =
 		return ansClues
 		--createZed ansNum ansNum	  
 --}
+
 --validation functions	
 isUnique :: Row -> Bool
 isUnique [] = True;
@@ -34,16 +35,23 @@ createZed i j = (createRow j) : (createZed (i-1) j);
 
 --Grid building
 
-north :: Row -> Row
+north :: [Int] -> [Int]
 north row = [0] ++ row ++ [0];
 
 weastHelper :: Int -> Int -> Row -> Row
 weastHelper c1 c2 r = c1: (reverse(c2: reverse r))
 
-weast :: [Int] -> [Int] -> [Row] -> [Row]
+weast :: [Int] -> [Int] -> Zed -> Zed
 weast [] [] [] = [];
 weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r):(weast c1t c2t rt) 
 
+south :: [Int] -> [Int]
+south row = [0] ++ row ++ [0];
+
+--inputGrid :: Zed -> Clue -> Zed
+--inputGrid z c = (north (c!!0)) : (weast (c!!1) (c!!2) z) : (south (c!!3));
+
+ex c = (north c!!1):[1,2,3,4]
 --test case
 --weast [1,2,3] [4,5,6] [[7,8,9],[10,11,12],[13,14,15]]
 
@@ -52,6 +60,8 @@ weast (c1:c1t) (c2:c2t) (r:rt) =  (weastHelper c1 c2 r):(weast c1t c2t rt)
 
 toString :: [Int] -> [String]
 toString i = id (map show i);
+
+fun x = north (x!!1);
 
 --zedToString :: Zed -> [String]
 --zedToString zed = foldr (\ x acc (map show) zed
@@ -65,8 +75,8 @@ toGrid2 = lnBreak " " . (map (map show))
 lnBreak :: String -> [[String]] -> String
 lnBreak str = intercalate "\n" . map (intercalate str)
 
-
---([1,3,2,2],[3,2,1,2],[2,2,1,3],[2,2,3,1])
+--test case
+--putStr (toGrid2 [[1,3,2,2],[3,2,1,2],[2,2,1,3],[2,2,3,1]])
 
 gameSize :: Clue -> Int
 gameSize clue = length clue
