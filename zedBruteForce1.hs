@@ -12,7 +12,8 @@ type Clue = ([Int],[Int],[Int],[Int])
 
 -- Given clues, returns a solved zed board
 solveZed :: Clue -> Zed             
-solveZed (n,s,e,w) = randomGuesser (n,s,e,w) (length n) (randomZed (length n) [] 0) (permutations[1..(length n)]) (factorial (length n))
+--solveZed (n,s,e,w) = randomGuesser (n,s,e,w) (length n) (randomZed (length n) [] 0) (permutations[1..(length n)]) (factorial (length n))
+solveZed (n,s,e,w) = head (filter (checkSolution (n,s,e,w)) (genPrunedBoards (length n)))
 
 -- Given clues, returns a solved zed board displayed as a grid
 solveZedGrid clues = displayGrid clues (solveZed clues)
@@ -25,7 +26,7 @@ checkSolution clues zed = (checkValidNumbers zed) && (checkNotFools clues zed)
 randomGuesser clues n try perms fac
  |checkSolution clues try = try
  |otherwise = randomGuesser clues n (randomZed n perms fac) perms fac
-
+ 
 --Generates a random zed board
 randomZed n [] _ = [[]]
 randomZed n perms fac = randomZed2 n n fac perms
@@ -36,7 +37,36 @@ randomZed2 n count fac perms
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
 
+genPrunedBoards :: Int -> [Zed] 
+genPrunedBoards n = pruneCols (genBoards n)
 
+pruneCols :: [Zed] -> [Zed]
+pruneCols zeds = 
+  filter removeCols zeds
+
+removeCols :: Zed -> Bool
+removeCols zed = 
+  not (or (map hasDup (allCols zed)))
+
+hasDup :: Row -> Bool
+hasDup []  = False
+hasDup (x:xs) = (x `elem` xs) || (hasDup xs)
+
+genBoards ::  Int -> [Zed]
+genBoards n = concatMap permutations (board (permutations [1..n]) n)
+  where
+    board _ 0 = [[]]
+    board [] _ = []
+    board (x:xs) n = (map (\ys -> x:ys) (board xs (n-1))) ++ (board xs n)
+
+allCols zed = [(getCol n zed) | n <- [0..((length zed)-1)]]
+
+getCol n [] = []
+getCol n zed = 
+    ((head(zed))!!n):(getCol n (tail(zed)))
+
+--solveZed ([2,2,1,3],[2,3,2,1],[1,3,2,2],[3,1,2,2])
+	
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Given a zed board, checks that each row & column contains the numbers 1-n
