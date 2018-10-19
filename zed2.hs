@@ -92,18 +92,25 @@ removeDuplicatesZeds zeds = filter checkDuplicatesZed zeds
 
 -- Given a zed board, returns True if the board has no invalid columns
 checkDuplicatesZed :: Zed -> Bool
-checkDuplicatesZed zed = and (map checkDuplicatesList (getAllColumns zed))
+checkDuplicatesZed zed = and (map checkDuplicatesList (allColumns zed))
 
 -- Given a zed board, returns all the North->South columns as lists
-getAllColumns :: Zed -> [Column]
-getAllColumns zed = getAllColumns' (length zed) zed
-getAllColumns' 0 _ = []
-getAllColumns' n zed = (getColumn (n-1) zed) : getAllColumns' (n-1) zed
-
+allColumns :: Zed -> [Column]
+allColumns zed = allColumns' (length zed) zed
+allColumns' 0 _ = []
+allColumns' n zed = (column (n-1) zed) : allColumns' (n-1) zed
+{-
+>allColumns [[4,2,1,3],[1,3,2,4],[3,1,4,2],[2,4,3,1]]
+[[3,4,2,1],[1,2,4,3],[2,3,1,4],[4,1,3,2]]
+-}
 -- Given a column number and a zed board, returns the column at that index as a list
-getColumn :: Int -> Zed -> Column
-getColumn _ [] = []
-getColumn n (h:t) = (h!!n) : (getColumn n t)
+column :: Int -> Zed -> Column
+column _ [] = []
+column n (h:t) = (h!!n) : (column n t)
+{-
+>column 1 [[4,2,1,3],[1,3,2,4],[3,1,4,2],[2,4,3,1]]
+[2,3,1,4]
+-}
 
 -- Given a list, returns True if the list has no duplicates
 checkDuplicatesList :: Row -> Bool
@@ -136,27 +143,39 @@ reverseList xs = foldl (\x y -> y:x) [] xs
 reverseLists [] = []
 reverseLists (h:t) = (foldl (\x y -> y:x) [] h) : (reverseLists t)
 
+-- Given a zed board, returns a transposed version of the board (a list of the columns)
+--https://stackoverflow.com/questions/2578930/understanding-this-matrix-transposition-function-in-haskell
 transposeZed ([]:_) = []
 transposeZed x = (map head x) : transposeZed (map tail x)
+{-
+>transposeZed [[1,4,3,2],[2,3,1,4],[4,1,2,3],[3,2,4,1]]
+[[1,2,4,3],[4,3,1,2],[3,1,2,4],[2,4,3,1]]
+-}
 
 -- Given clues and a zed board, returns True if the merchants are not fools (they only go to outposts if they are better than previous outposts)
 checkNotFools :: Clue -> Zed -> Bool
 checkNotFools clues [[]] = False
 checkNotFools clues zed = checkSouthNorth clues zed && checkNorthSouth clues zed && checkEastWest clues zed && checkWestEast clues zed
+{-
+>checkNotFools ([1,3,2,2],[3,2,1,2],[2,2,1,3],[2,2,3,1]) [[4,1,3,2],[2,3,4,1],[3,2,1,4],[1,4,2,3]]
+True
+>checkNotFools ([1,3,2,2],[3,2,1,2],[2,2,1,3],[2,2,3,1]) [[3,1,3,2],[2,3,4,1],[3,2,1,4],[1,4,2,3]]
+False
+-}
 
--- Given clues and a zed board, maniplates input so that the South->North columns can be read left ->right
+-- Given clues and a zed board, maniplates input so that the South->North columns can be read left ->right and returns True if valid
 checkSouthNorth :: Clue -> Zed -> Bool
 checkSouthNorth (n,e,s,w) zed = checkLeftToRight (reverseList s) (reverseLists (transposeZed zed))
 
--- Given clues and a zed board, maniplates input so that the North->South columns can be read left ->right
+-- Given clues and a zed board, maniplates input so that the North->South columns can be read left ->right and returns True if valid
 checkNorthSouth :: Clue -> Zed -> Bool
 checkNorthSouth (n,e,s,w) zed = checkLeftToRight n (transposeZed zed)
 
--- Given clues and a zed board, maniplates input so that the East->West columns can be read left ->right
+-- Given clues and a zed board, maniplates input so that the East->West columns can be read left ->right and returns True if valid
 checkEastWest :: Clue -> Zed -> Bool
 checkEastWest (n,e,s,w) zed = checkLeftToRight e (reverseLists zed)
 
--- Given clues and a zed board, maniplates input so that the West->East columns can be read left ->right
+-- Given clues and a zed board, maniplates input so that the West->East columns can be read left ->right and returns True if valid
 checkWestEast :: Clue -> Zed -> Bool
 checkWestEast (n,e,s,w) zed = checkLeftToRight (reverseList w) zed
 
@@ -166,22 +185,28 @@ checkLeftToRight _ [] = True
 checkLeftToRight [] _ = True
 checkLeftToRight (c:ct) (r:rt)
  |(c == 0) = checkLeftToRight ct rt
- |checkNumberPostsVisted c r = checkLeftToRight ct rt
+ |checkNumberPostsVisited c r = checkLeftToRight ct rt
  |otherwise = False
 
 -- Given a single clue and a single row, walks through the row and returns True if it is valid
-checkNumberPostsVisted :: Int -> [Int] -> Bool
-checkNumberPostsVisted c r = checkNumberPostsVisted' c r 0 0
- 
-checkNumberPostsVisted' :: Int -> [Int] -> Int -> Int -> Bool
-checkNumberPostsVisted' clue [] tallest outposts
+checkNumberPostsVisited :: Int -> [Int] -> Bool
+checkNumberPostsVisited c r = checkNumberPostsVisited' c r 0 0
+{-
+>checkNumberPostsVisited 3 [1,2,4,3]
+True
+>checkNumberPostsVisited 3 [1,2,3,4]
+False
+-}
+
+checkNumberPostsVisited' :: Int -> [Int] -> Int -> Int -> Bool
+checkNumberPostsVisited' clue [] tallest outposts
  |outposts == clue = True
  |otherwise = False
 
-checkNumberPostsVisted' clue (h:t) tallest outposts
+checkNumberPostsVisited' clue (h:t) tallest outposts
  |outposts>clue = False
- |h>tallest = checkNumberPostsVisted' clue t h (outposts+1)
- |h<tallest = checkNumberPostsVisted' clue t tallest outposts
+ |h>tallest = checkNumberPostsVisited' clue t h (outposts+1)
+ |h<tallest = checkNumberPostsVisited' clue t tallest outposts
  |h==tallest = False
 
 --Grid Building----------------------------------------------------------------------------------------------------------------------
